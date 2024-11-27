@@ -17,27 +17,29 @@ typedef struct blockMeta blockMeta;
 blockMeta *find_free_block(blockMeta **last, size_t size);
 blockMeta *requestSpace(blockMeta* last, size_t size);
 blockMeta *get_memblock(void* ptr);
-void *malloc(size_t size);
-void free(void* ptr);
+void *my_malloc(size_t size);
+void my_free(void* ptr);
 
 #define META_SIZE sizeof(blockMeta)
 
 void *globalBase = NULL; // the head of our linked list
 
+/*
 void main(){
-	printf("hello malloc\n");
-	int* arr = malloc(10 * sizeof(int));
-	printf("address of allocated arr is %p\n", arr);
-	free(arr);
-	printf("all done round 1\n");
+	//printf("hello malloc\n");
+	int* arr = my_malloc(10 * sizeof(int));
+	//printf("address of allocated arr is %p\n", arr);
+	my_free(arr);
+	//printf("all done round 1\n");
 
-	arr = malloc(5 * sizeof(int));
-	printf("this should use same memblock as before, because its smaller\n");
-	printf("start of block: %p\n", arr);
-	free(arr);
+	arr = my_malloc(5 * sizeof(int));
+	//printf("this should use same memblock as before, because its smaller\n");
+	//printf("start of block: %p\n", arr);
+	my_free(arr);
 }
+*/
 
-void *malloc(size_t size){
+void *my_malloc(size_t size){
 	blockMeta *block;
 	
 	// I always will go into this as long as I call this.
@@ -54,6 +56,7 @@ void *malloc(size_t size){
 		blockMeta *last = globalBase;	
 		block = find_free_block(&last, size);
 		if(!block){
+			printf("The requested size %lu isn't available. sbrk call.\n", size);
 			// 1. will go in here when there is no existing block
 			// big enough for the requested size in param.
 			// 2. also when none of them are free
@@ -66,6 +69,7 @@ void *malloc(size_t size){
 				return NULL;
 			}
 		} else {
+			printf("The requested size %lu is available. Will return the block at %p\n", size, block+1);
 			// Will enter here if an existing block can accomodate
 			// the request.
 			block->free = 0;
@@ -77,14 +81,14 @@ void *malloc(size_t size){
 	return block+1;	
 }
 
-void free(void* ptr){
+void my_free(void* ptr){
 	if(!ptr){
 		return;
 	}
 
 	blockMeta* block = get_memblock(ptr);
 	block->free = 1;
-	printf("I have freed memblock at %p\n", ptr);
+	//printf("I have freed memblock at %p\n", ptr);
 }
 
 
