@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <stdio.h>
+#include "mymalloc.h"
 
 struct blockMeta {
 	size_t size; // size of this block of memory
@@ -39,23 +40,34 @@ void main(){
 void *malloc(size_t size){
 	blockMeta *block;
 	
+	// I always will go into this as long as I call this.
 	if(globalBase == NULL){
 		// Allocate our first memory from the OS.
 		// Return that. Start of the linked list.
 		block = requestSpace(NULL, size);	
 		globalBase = block;
-	} else {
+	} else { // will go in any call past first one
+
 		// Search our linked list for space big enough.
 		// If it doesn't exist, then request for more
 		// space from the OS.
 		blockMeta *last = globalBase;	
 		block = find_free_block(&last, size);
 		if(!block){
+			// 1. will go in here when there is no existing block
+			// big enough for the requested size in param.
+			// 2. also when none of them are free
+			// TODO: add function for splitting up bigger blocks
+			// and updating the linkedlist.
 			block = requestSpace(last, size);
 			if(!block){
+				// Only happens if OS can't offer any more memory.
+				// am going to not worry about it.
 				return NULL;
 			}
 		} else {
+			// Will enter here if an existing block can accomodate
+			// the request.
 			block->free = 0;
 			// block->random shit here
 		}
