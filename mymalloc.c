@@ -25,17 +25,8 @@ void my_free(void* ptr);
 void *globalBase = NULL; // the head of our linked list
 
 /*
-void main(){
-	//printf("hello malloc\n");
-	int* arr = my_malloc(10 * sizeof(int));
-	//printf("address of allocated arr is %p\n", arr);
-	my_free(arr);
-	//printf("all done round 1\n");
-
-	arr = my_malloc(5 * sizeof(int));
-	//printf("this should use same memblock as before, because its smaller\n");
-	//printf("start of block: %p\n", arr);
-	my_free(arr);
+int main(){
+	printf("sizeof(blockMeta):%zu", META_SIZE);
 }
 */
 
@@ -44,8 +35,6 @@ void *my_malloc(size_t size){
 	
 	// I always will go into this as long as I call this.
 	if(globalBase == NULL){
-		// Allocate our first memory from the OS.
-		// Return that. Start of the linked list.
 		block = requestSpace(NULL, size);	
 		globalBase = block;
 	} else { // will go in any call past first one
@@ -56,28 +45,44 @@ void *my_malloc(size_t size){
 		blockMeta *last = globalBase;	
 		block = find_free_block(&last, size);
 		if(!block){
-			printf("The requested size %lu isn't available. sbrk call.\n", size);
-			// 1. will go in here when there is no existing block
-			// big enough for the requested size in param.
-			// 2. also when none of them are free
-			// TODO: add function for splitting up bigger blocks
-			// and updating the linkedlist.
 			block = requestSpace(last, size);
 			if(!block){
-				// Only happens if OS can't offer any more memory.
-				// am going to not worry about it.
 				return NULL;
 			}
 		} else {
-			printf("The requested size %lu is available. Will return the block at %p\n", size, block+1);
-			// Will enter here if an existing block can accomodate
-			// the request.
+			//printf("The requested size %lu is available. Will return the block at %p\n", size, block+1);
+			// if the block is larger than what's requested, then split up the block.
+			// TODO: put this into a function.
+
+			// if this block is big enough to accomodate a new block, let's split it.
+			// ( + sizeof(unsigned char) is to set the minimum size for a mem block
+			// to be 1 byte.
+			if(block->size > size + sizeof(blockMeta) + sizeof(unsigned char)){
+				printf("Splitting block at %p since its really big (memory actually starts at %p).\n", block, block+1);
+				blockMeta* newBlock = (blockMeta*)block + 1 + size;
+				size_t sizeOfNewBlock = block->size - size - META_SIZE;
+				newBlock->free = 1;
+				newBlock->size = sizeOfNewBlock;
+				if(block->next != NULL){
+					newBlock->next = block->next;
+				} else {
+					newBlock->next = NULL;
+				}
+				block->next = newBlock;
+				block->size = size;
+				printf("Created new block %p (size of %zu) after old block (%p) which now has size of (%zu).\n", newBlock, newBlock->size, block, block->size);
+				if(newBlock->next){
+					printf("oldblock(%p) -> newblock(%p) -> (%p)\n", block, newBlock, newBlock->next);
+				} else {
+					printf("oldblock(%p) -> newblock(%p) -> (NULL)\n", block, newBlock);
+				}
+			} 
+
 			block->free = 0;
 			// block->random shit here
 		}
 	}
-	//printf("I have allocated memory at %p\n", block+1);
-	//printf("I have allocated memory at\n");
+	printf("Memory block starting at %p has been returning to caller requesting %zu bytes.\n", block + 1, size);
 	return block+1;	
 }
 
@@ -88,7 +93,6 @@ void my_free(void* ptr){
 
 	blockMeta* block = get_memblock(ptr);
 	block->free = 1;
-	//printf("I have freed memblock at %p\n", ptr);
 }
 
 
