@@ -22,13 +22,14 @@ In both of these cases, ask the OS for more memory please.
 
 int main(){
 	printf("main starting\n");
-	//test_nothingBigEnough();
-	//test_noFreeBlocksThatAreBigEnough();
+	test_nothingBigEnough();
+	test_noFreeBlocksThatAreBigEnough();
 	test_splitBigBlock();
 	printf("main ending\n");
 }
 
 void test_splitBigBlock(){
+	printf("test test_splitBigBlock start\n");
 	int* arr = (int *)my_malloc(50 * sizeof(int));
 	for(int i=0; i<50; i++){
 		arr[i] = i * 5;
@@ -39,6 +40,7 @@ void test_splitBigBlock(){
 	// it should be split up and given away.
 	int* split = my_malloc(sizeof(int));
 	my_free(split);
+	printf("test test_splitBigBlock end\n");
 }
 
 void test_nothingBigEnough(){

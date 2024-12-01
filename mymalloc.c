@@ -11,16 +11,16 @@ struct BlockMeta {
 	int free; // is this block free or taken already?
 	int magic; // 'For debugging only'
 };
-
 typedef struct BlockMeta BlockMeta;
+#define META_SIZE sizeof(BlockMeta)
 
 BlockMeta *_find_free_block(BlockMeta **last, size_t size);
 BlockMeta *_requestSpace(BlockMeta* last, size_t size);
 void print_heap_visualization();
 void *my_malloc(size_t size);
 void my_free(void* ptr);
-
-#define META_SIZE sizeof(BlockMeta)
+BlockMeta* _split_block(BlockMeta* block, size_t size);
+void print_block_info(BlockMeta* block);
 
 void *globalBase = NULL; // the head of our linked list
 
@@ -53,23 +53,8 @@ void *my_malloc(size_t size){
 			// to be 1 byte.
 			if(block->size > size + sizeof(BlockMeta) + sizeof(unsigned char)){
 				printf("Splitting block at %p since its really big (memory actually starts at %p).\n", block, block+1);
-				BlockMeta* newBlock = (BlockMeta*)block + 1 + size;
-				size_t sizeOfNewBlock = block->size - size - META_SIZE;
-				newBlock->free = 1;
-				newBlock->size = sizeOfNewBlock;
-				if(block->next != NULL){
-					newBlock->next = block->next;
-				} else {
-					newBlock->next = NULL;
-				}
-				block->next = newBlock;
-				block->size = size;
-				printf("Created new block %p (size of %zu) after old block (%p) which now has size of (%zu).\n", newBlock, newBlock->size, block, block->size);
-				if(newBlock->next){
-					printf("oldblock(%p) -> newblock(%p) -> (%p)\n", block, newBlock, newBlock->next);
-				} else {
-					printf("oldblock(%p) -> newblock(%p) -> (NULL)\n", block, newBlock);
-				}
+				//BlockMeta* newBlock = (BlockMeta*)block + 1 + size;
+				BlockMeta* newBlock = _split_block(block, size);
 			} 
 
 			block->free = 0;
@@ -130,23 +115,58 @@ BlockMeta *_requestSpace(BlockMeta* last, size_t size){
 	return block;	
 }
 
+/*
+Given the block to split & the size the block should be after the split,
+will return a pointer to the new block created from the split.
 
+The BlockMeta* block provided will be altered appropriately.
+
+TODO: add assertion that makes sure the block is big enough to split.
+*/
+BlockMeta* _split_block(BlockMeta* block, size_t size){
+	BlockMeta* newBlock = (BlockMeta*)block + 1 + size;
+	size_t sizeOfNewBlock = block->size - size - META_SIZE;
+	newBlock->free = 1;
+	newBlock->size = sizeOfNewBlock;
+	if(block->next != NULL){
+		newBlock->next = block->next;
+	} else {
+		newBlock->next = NULL;
+	}
+	block->next = newBlock;
+	block->size = size;
+	printf("Created new block %p (size of %zu) after old block (%p) which now has size of (%zu).\n", newBlock, newBlock->size, block, block->size);
+	if(newBlock->next){
+		printf("oldblock(%p) -> newblock(%p) -> (%p)\n", block, newBlock, newBlock->next);
+	} else {
+		printf("oldblock(%p) -> newblock(%p) -> (NULL)\n", block, newBlock);
+	}
+
+}
+
+// -----------------
+// printing stuff
+// -----------------
 
 void print_heap_visualization(){
 	printf("-----VISUALIZATION START-----\n");
 	printf("(metadata size is %zu)\n", META_SIZE);
 	printf("global base:\n");
 	BlockMeta* curr = globalBase;
-	printf("----------\n");
-	printf("size: %zu\nnext: %p\nfree: %i\n", curr->size, curr->next, curr->free);
-	printf("----------\n|\nv\n");
+	print_block_info(curr);
 	while(curr->next != NULL) {
 		curr = curr->next;
-		printf("----------\n");
-		printf("size: %zu\nnext: %p\nfree: %i\n", curr->size, curr->next, curr->free);
-		printf("----------\n|\nv\n");
+		print_block_info(curr);
 	}
 	printf("NULL\n");	
 	printf("-----VISUALIZATION END-----\n");
+}
+
+
+void print_block_info(BlockMeta* block){
+	printf("----------\n");
+	printf("starts at %p\n", block);
+	printf("size: %zu\nnext: %p\nfree: %i\n", block->size, block->next, block->free);
+	printf("----------\n|\nv\n");
 }
 
