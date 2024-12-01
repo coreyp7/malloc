@@ -133,6 +133,20 @@ BlockMeta *_requestSpace(BlockMeta* last, size_t size){
 
 
 void print_heap_visualization(){
-	printf("heap visual call\n");
+	printf("-----VISUALIZATION START-----\n");
+	printf("(metadata size is %zu)\n", META_SIZE);
+	printf("global base:\n");
+	BlockMeta* curr = globalBase;
+	printf("----------\n");
+	printf("size: %zu\nnext: %p\nfree: %i\n", curr->size, curr->next, curr->free);
+	printf("----------\n|\nv\n");
+	while(curr->next != NULL) {
+		curr = curr->next;
+		printf("----------\n");
+		printf("size: %zu\nnext: %p\nfree: %i\n", curr->size, curr->next, curr->free);
+		printf("----------\n|\nv\n");
+	}
+	printf("NULL\n");	
+	printf("-----VISUALIZATION END-----\n");
 }
 
