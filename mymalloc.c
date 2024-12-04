@@ -8,6 +8,7 @@
 struct BlockMeta {
 	size_t size; // size of this block of memory
 	struct BlockMeta *next; // next memory block for this program
+	struct BlockMeta *prev;
 	int free; // is this block free or taken already?
 	int magic; // 'For debugging only'
 };
@@ -107,6 +108,7 @@ BlockMeta *_requestSpace(BlockMeta* last, size_t size){
 	
 	if(last){ // first time being called will be null
 		last->next = block;
+		block->prev = last;
 	}
 	block->size = size;
 	block->next = NULL;
@@ -126,6 +128,9 @@ TODO: add assertion that makes sure the block is big enough to split.
 BlockMeta* _split_block(BlockMeta* block, size_t size){
 	BlockMeta* newBlock = (BlockMeta*)block + 1 + size;
 	size_t sizeOfNewBlock = block->size - size - META_SIZE;
+
+	// Initialize newBlock, which will exist after
+	// block in memory.
 	newBlock->free = 1;
 	newBlock->size = sizeOfNewBlock;
 	if(block->next != NULL){
@@ -133,6 +138,10 @@ BlockMeta* _split_block(BlockMeta* block, size_t size){
 	} else {
 		newBlock->next = NULL;
 	}
+	newBlock->prev = block;
+	
+	// Update block with new size & next ref,
+	// now that newBlock has taken the rest of block's memory.
 	block->next = newBlock;
 	block->size = size;
 	printf("Created new block %p (size of %zu) after old block (%p) which now has size of (%zu).\n", newBlock, newBlock->size, block, block->size);
@@ -166,7 +175,7 @@ void print_heap_visualization(){
 void print_block_info(BlockMeta* block){
 	printf("----------\n");
 	printf("starts at %p\n", block);
-	printf("size: %zu\nnext: %p\nfree: %i\n", block->size, block->next, block->free);
+	printf("size: %zu\nprev: %p\nnext: %p\nfree: %i\n", block->size, block->prev, block->next, block->free);
 	printf("----------\n|\nv\n");
 }
 
