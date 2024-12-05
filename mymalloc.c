@@ -75,6 +75,43 @@ void my_free(void* ptr){
 
 	BlockMeta* block = (BlockMeta*)ptr -1;
 	block->free = 1;
+ 	
+	// Combine any free nearby blocks into one.
+	// NOTE: Be sure to do the math correctly on the size
+	// of the merged together block.
+	
+	// Look at prev and combine.
+	if(block->prev && block->prev->free){
+		// Delete block, and update prev with:
+		/*
+			New size,
+			new next
+		*/
+		prev->size += META_SIZE + block->size;
+		if(block->next){
+			prev->next = block->next;
+		} else {
+			prev->next = NULL;
+		{
+
+		// Don't need to do this, but why not for now.
+		block->size = 0;
+		block->next = NULL;
+		block->prev = NULL;
+	}
+
+	// Look at next and combine.
+	if(block->next && block->next->free){
+		block->size += META_SIZE + next->size;
+		if(block->next->next){
+			block->next = block->next->next;
+		} else {
+			block->next = NULL;
+		{
+		block->next->size = 0;
+		block->next->next = NULL;
+		block->next->prev = NULL;
+	}
 }
 
 
