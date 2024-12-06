@@ -5,6 +5,7 @@ void test_nothingBigEnough();
 void test_noFreeBlocksThatAreBigEnough();
 void test_splitBigBlock();
 
+
 // Test case:
 /*
 
@@ -28,8 +29,18 @@ int main(){
 	printf("main ending\n");
 }
 
+void test_combineBigBlocks(){
+	printf("TEST START:%s\n", __func__);
+	/*
+		Corey: shit to do when you get back on this.
+		1. Look into segfault.	
+		2. Create test for block combining.
+	*/
+	printf("TEST END:%s\n", __func__);
+}
+
 void test_splitBigBlock(){
-	printf("test test_splitBigBlock start\n");
+	printf("TEST START:%s\n", __func__);
 	int* arr = (int *)my_malloc(50 * sizeof(int));
 	for(int i=0; i<50; i++){
 		arr[i] = i * 5;
@@ -40,11 +51,11 @@ void test_splitBigBlock(){
 	// it should be split up and given away.
 	int* split = my_malloc(sizeof(int));
 	my_free(split);
-	printf("test test_splitBigBlock end\n");
+	printf("TEST END:%s\n", __func__);
 }
 
 void test_nothingBigEnough(){
-	printf("test start\n");
+	printf("TEST START:%s\n", __func__);
 
 	char* examplechar = my_malloc(sizeof(char));
 	my_free(examplechar);
@@ -55,23 +66,23 @@ void test_nothingBigEnough(){
 	char* examplestring = my_malloc(25 * sizeof(char));
 	my_free(examplestring);
 
-	printf("test end\n");
+	printf("TEST END:%s\n", __func__);
 }
 
 
 void test_noFreeBlocksThatAreBigEnough(){
-	printf("test start\n");
+	printf("TEST START:%s\n", __func__);
 
 	char* examplechar = my_malloc(sizeof(char));
+	printf("this is the free call that breaks shit\n");
 	my_free(examplechar);
 	int* exampleint = my_malloc(sizeof(int));
-	//my_free(exampleint);
 	int* intForTest = my_malloc(sizeof(int));
 	my_free(intForTest);
+	my_free(exampleint);
 
-	printf("test end\n");
+	printf("TEST END:%s\n", __func__);
 }
-
 
 
 

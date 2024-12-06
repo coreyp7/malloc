@@ -72,13 +72,17 @@ void my_free(void* ptr){
 	if(!ptr){
 		return;
 	}
+	printf("hello 1\n");
 
 	BlockMeta* block = (BlockMeta*)ptr -1;
 	block->free = 1;
+
+	printf("hello 2\n");
  	
 	// Combine any free nearby blocks into one.
 	// NOTE: Be sure to do the math correctly on the size
 	// of the merged together block.
+	printf("start of the mess\n");
 	
 	// Look at prev and combine.
 	if(block->prev && block->prev->free){
@@ -87,12 +91,15 @@ void my_free(void* ptr){
 			New size,
 			new next
 		*/
-		prev->size += META_SIZE + block->size;
+		// TODO: fix logic here to replicate correctness
+		// of next block below :)
+		printf("in prev if\n");
+		block->prev->size += META_SIZE + block->size;
 		if(block->next){
-			prev->next = block->next;
+			block->prev->next = block->next;
 		} else {
-			prev->next = NULL;
-		{
+			block->prev->next = NULL;
+		}
 
 		// Don't need to do this, but why not for now.
 		block->size = 0;
@@ -102,17 +109,23 @@ void my_free(void* ptr){
 
 	// Look at next and combine.
 	if(block->next && block->next->free){
-		block->size += META_SIZE + next->size;
+		printf("in next if\n");
+		block->size += META_SIZE + block->next->size;
+
+		// Technically not clearing block->next->next ref.
+		// Don't think its a problem.
+		// If it is, set it to pointer so we don't lose it and
+		// set everything to NULL.
+		block->next->size = 0;
+		block->next->prev = NULL;
 		if(block->next->next){
 			block->next = block->next->next;
 		} else {
 			block->next = NULL;
-		{
-		block->next->size = 0;
-		block->next->next = NULL;
-		block->next->prev = NULL;
+		}
 	}
 }
+
 
 
 /////////////////////////////////////////////
