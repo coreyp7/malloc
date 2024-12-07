@@ -4,6 +4,7 @@
 void test_nothingBigEnough();
 void test_noFreeBlocksThatAreBigEnough();
 void test_splitBigBlock();
+void test_combineBlocks();
 
 
 // Test case:
@@ -23,20 +24,30 @@ In both of these cases, ask the OS for more memory please.
 
 int main(){
 	printf("main starting\n");
-	test_nothingBigEnough();
-	test_noFreeBlocksThatAreBigEnough();
-	test_splitBigBlock();
+	//test_nothingBigEnough();
+	//test_noFreeBlocksThatAreBigEnough();
+	//test_splitBigBlock();
+	test_combineBlocks();
 	printf("main ending\n");
 }
 
-void test_combineBigBlocks(){
+void test_combineBlocks(){
 	printf("TEST START:%s\n", __func__);
-	/*
-		Corey: shit to do when you get back on this.
-		1. Look into segfault.	
-		2. Create test for block combining.
-	*/
+	int* int1 = my_malloc(sizeof(int)); 
+	int* int2 = my_malloc(sizeof(int)); 
+	int* int3 = my_malloc(sizeof(int)); 
+	int* int4 = my_malloc(sizeof(int)); 
+	int* int5 = my_malloc(sizeof(int)); 
+	my_free(int2);
+	my_free(int4);
+	// this free will trigger next & prev
+	printf("HERE! this should be triggering next & prev\n");
+	my_free(int3);
+	
+	
 	printf("TEST END:%s\n", __func__);
+	my_free(int1);
+	my_free(int5);
 }
 
 void test_splitBigBlock(){

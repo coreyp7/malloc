@@ -1,0 +1,303 @@
+main starting
+TEST START:test_combineBlocks
+Returning block of size 4 to caller requesting 4.
+Returning block of size 4 to caller requesting 4.
+Returning block of size 4 to caller requesting 4.
+Returning block of size 4 to caller requesting 4.
+Returning block of size 4 to caller requesting 4.
+my_free called: freeing 0x563f71e48024
+----------
+starts at 0x563f71e48024
+size: 4
+prev: 0x563f71e48000
+next: 0x563f71e48048
+free: 1
+----------
+my_free called: freeing 0x563f71e4806c
+----------
+starts at 0x563f71e4806c
+size: 4
+prev: 0x563f71e48048
+next: 0x563f71e48090
+free: 1
+----------
+HERE! this should be triggering next & prev
+my_free called: freeing 0x563f71e48048
+----------
+starts at 0x563f71e48048
+size: 4
+prev: 0x563f71e48024
+next: 0x563f71e4806c
+free: 1
+----------
+my_free: Prev is free: combine block 0x563f71e48048 with block 0x563f71e48024
+-----"my_free: Before combining" VISUALIZATION START-----
+(metadata size is 32)
+global base:
+----------
+starts at 0x563f71e48000
+size: 4
+prev: (nil)
+next: 0x563f71e48024
+free: 0
+----------
+----------
+starts at 0x563f71e48024
+size: 4
+prev: 0x563f71e48000
+next: 0x563f71e48048
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e48048
+size: 4
+prev: 0x563f71e48024
+next: 0x563f71e4806c
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e4806c
+size: 4
+prev: 0x563f71e48048
+next: 0x563f71e48090
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e48090
+size: 4
+prev: 0x563f71e4806c
+next: (nil)
+free: 0
+----------
+|
+v
+NULL
+------"my_free: Before combining" VISUALIZATION END-----
+-----"my_free: After combining" VISUALIZATION START-----
+(metadata size is 32)
+global base:
+----------
+starts at 0x563f71e48000
+size: 4
+prev: (nil)
+next: 0x563f71e48024
+free: 0
+----------
+----------
+starts at 0x563f71e48024
+size: 40
+prev: 0x563f71e48000
+next: 0x563f71e4806c
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e4806c
+size: 4
+prev: 0x563f71e48048
+next: 0x563f71e48090
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e48090
+size: 4
+prev: 0x563f71e4806c
+next: (nil)
+free: 0
+----------
+|
+v
+NULL
+------"my_free: After combining" VISUALIZATION END-----
+my_free: Next is free: combine block 0x563f71e48024 with block 0x563f71e4806c
+-----"my_free: Before combining" VISUALIZATION START-----
+(metadata size is 32)
+global base:
+----------
+starts at 0x563f71e48000
+size: 4
+prev: (nil)
+next: 0x563f71e48024
+free: 0
+----------
+----------
+starts at 0x563f71e48024
+size: 40
+prev: 0x563f71e48000
+next: 0x563f71e4806c
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e4806c
+size: 4
+prev: 0x563f71e48048
+next: 0x563f71e48090
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e48090
+size: 4
+prev: 0x563f71e4806c
+next: (nil)
+free: 0
+----------
+|
+v
+NULL
+------"my_free: Before combining" VISUALIZATION END-----
+-----"my_free: After combining" VISUALIZATION START-----
+(metadata size is 32)
+global base:
+----------
+starts at 0x563f71e48000
+size: 4
+prev: (nil)
+next: 0x563f71e48024
+free: 0
+----------
+----------
+starts at 0x563f71e48024
+size: 76
+prev: 0x563f71e48000
+next: 0x563f71e48090
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e48090
+size: 4
+prev: 0x563f71e4806c
+next: (nil)
+free: 0
+----------
+|
+v
+NULL
+------"my_free: After combining" VISUALIZATION END-----
+TEST END:test_combineBlocks
+my_free called: freeing 0x563f71e48000
+----------
+starts at 0x563f71e48000
+size: 4
+prev: (nil)
+next: 0x563f71e48024
+free: 1
+----------
+my_free: Next is free: combine block 0x563f71e48000 with block 0x563f71e48024
+-----"my_free: Before combining" VISUALIZATION START-----
+(metadata size is 32)
+global base:
+----------
+starts at 0x563f71e48000
+size: 4
+prev: (nil)
+next: 0x563f71e48024
+free: 1
+----------
+----------
+starts at 0x563f71e48024
+size: 76
+prev: 0x563f71e48000
+next: 0x563f71e48090
+free: 1
+----------
+|
+v
+----------
+starts at 0x563f71e48090
+size: 4
+prev: 0x563f71e4806c
+next: (nil)
+free: 0
+----------
+|
+v
+NULL
+------"my_free: Before combining" VISUALIZATION END-----
+-----"my_free: After combining" VISUALIZATION START-----
+(metadata size is 32)
+global base:
+----------
+starts at 0x563f71e48000
+size: 112
+prev: (nil)
+next: 0x563f71e48090
+free: 1
+----------
+----------
+starts at 0x563f71e48090
+size: 4
+prev: 0x563f71e4806c
+next: (nil)
+free: 0
+----------
+|
+v
+NULL
+------"my_free: After combining" VISUALIZATION END-----
+my_free called: freeing 0x563f71e48090
+----------
+starts at 0x563f71e48090
+size: 4
+prev: 0x563f71e4806c
+next: (nil)
+free: 1
+----------
+my_free: Prev is free: combine block 0x563f71e48090 with block 0x563f71e4806c
+-----"my_free: Before combining" VISUALIZATION START-----
+(metadata size is 32)
+global base:
+----------
+starts at 0x563f71e48000
+size: 112
+prev: (nil)
+next: 0x563f71e48090
+free: 1
+----------
+----------
+starts at 0x563f71e48090
+size: 4
+prev: 0x563f71e4806c
+next: (nil)
+free: 1
+----------
+|
+v
+NULL
+------"my_free: Before combining" VISUALIZATION END-----
+-----"my_free: After combining" VISUALIZATION START-----
+(metadata size is 32)
+global base:
+----------
+starts at 0x563f71e48000
+size: 112
+prev: (nil)
+next: 0x563f71e48090
+free: 1
+----------
+----------
+starts at 0x563f71e48090
+size: 0
+prev: (nil)
+next: (nil)
+free: 1
+----------
+|
+v
+NULL
+------"my_free: After combining" VISUALIZATION END-----
+main ending

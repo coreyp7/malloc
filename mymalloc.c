@@ -75,10 +75,12 @@ void my_free(void* ptr){
  	
 	
 	// Combine nearby blocks if possible.
+	//TODO: MOVE into functions
 	if(block->prev && block->prev->free){
 		printf("my_free: Prev is free: combine block %p with block %p\n", block, block->prev);
 		print_heap_visualization("my_free: Before combining");
 		block->prev->size += META_SIZE + block->size;
+		BlockMeta* blockPrev = block->prev;
 
 		if(block->next){
 			block->prev->next = block->next;
@@ -89,6 +91,10 @@ void my_free(void* ptr){
 		block->size = 0;
 		block->prev = NULL;
 		print_heap_visualization("my_free: After combining");
+
+		// Reassign block to new combined block.
+		// Avoid errors if we go into next if block.
+		block = blockPrev;
 	}
 
 	// Look at next and combine.
