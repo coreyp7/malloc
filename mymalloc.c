@@ -17,7 +17,7 @@ typedef struct BlockMeta BlockMeta;
 
 BlockMeta *_find_free_block(BlockMeta **last, size_t size);
 BlockMeta *_requestSpace(BlockMeta* last, size_t size);
-void print_heap_visualization();
+void print_heap_visualization(char* title);
 void *my_malloc(size_t size);
 void my_free(void* ptr);
 BlockMeta* _split_block(BlockMeta* block, size_t size);
@@ -28,7 +28,6 @@ void *globalBase = NULL; // the head of our linked list
 void *my_malloc(size_t size){
 	BlockMeta *block;
 	
-	// I always will go into this as long as I call this.
 	if(globalBase == NULL){
 		block = _requestSpace(NULL, size);	
 		globalBase = block;
@@ -45,16 +44,13 @@ void *my_malloc(size_t size){
 				return NULL;
 			}
 		} else {
-			//printf("The requested size %lu is available. Will return the block at %p\n", size, block+1);
-			// if the block is larger than what's requested, then split up the block.
-			// TODO: put this into a function.
-
 			// if this block is big enough to accomodate a new block, let's split it.
 			// ( + sizeof(unsigned char) is to set the minimum size for a mem block
 			// to be 1 byte.
+			// TODO: this should prolly have a test written for it.
 			if(block->size > size + sizeof(BlockMeta) + sizeof(unsigned char)){
-				printf("Splitting block at %p since its really big (memory actually starts at %p).\n", block, block+1);
-				//BlockMeta* newBlock = (BlockMeta*)block + 1 + size;
+				printf("my_malloc: User requested for %zu bytes, the block is currently %zu bytes.Splitting block (BlockMeta at %p) since its really big.\n", size, block->size, block);
+				print_heap_visualization("Before mem block split");	
 				BlockMeta* newBlock = _split_block(block, size);
 			} 
 
@@ -62,9 +58,8 @@ void *my_malloc(size_t size){
 			// block->random shit here
 		}
 	}
-	printf("Memory block starting at %p has been returning to caller requesting %zu bytes.\n", block + 1, size);
+	printf("Returning block of size %zu to caller requesting %zu.\n", block->size, size);
 
-	print_heap_visualization();
 	return block+1;	
 }
 
@@ -72,57 +67,48 @@ void my_free(void* ptr){
 	if(!ptr){
 		return;
 	}
-	printf("hello 1\n");
 
 	BlockMeta* block = (BlockMeta*)ptr -1;
+	printf("my_free called: freeing %p\n", block);
 	block->free = 1;
-
-	printf("hello 2\n");
+	print_block_info(block);
  	
-	// Combine any free nearby blocks into one.
-	// NOTE: Be sure to do the math correctly on the size
-	// of the merged together block.
-	printf("start of the mess\n");
 	
-	// Look at prev and combine.
+	// Combine nearby blocks if possible.
 	if(block->prev && block->prev->free){
-		// Delete block, and update prev with:
-		/*
-			New size,
-			new next
-		*/
-		// TODO: fix logic here to replicate correctness
-		// of next block below :)
-		printf("in prev if\n");
+		printf("my_free: Prev is free: combine block %p with block %p\n", block, block->prev);
+		print_heap_visualization("my_free: Before combining");
 		block->prev->size += META_SIZE + block->size;
+
 		if(block->next){
 			block->prev->next = block->next;
 		} else {
 			block->prev->next = NULL;
 		}
-
-		// Don't need to do this, but why not for now.
-		block->size = 0;
 		block->next = NULL;
+		block->size = 0;
 		block->prev = NULL;
+		print_heap_visualization("my_free: After combining");
 	}
 
 	// Look at next and combine.
 	if(block->next && block->next->free){
-		printf("in next if\n");
+		printf("my_free: Next is free: combine block %p with block %p\n", block, block->next);
+		print_heap_visualization("my_free: Before combining");
 		block->size += META_SIZE + block->next->size;
 
-		// Technically not clearing block->next->next ref.
-		// Don't think its a problem.
-		// If it is, set it to pointer so we don't lose it and
-		// set everything to NULL.
-		block->next->size = 0;
-		block->next->prev = NULL;
+		// OK now it is, just test it first, 
+		// so leaving comment here for prosperity.
+		BlockMeta* blockNext = block->next;
 		if(block->next->next){
 			block->next = block->next->next;
 		} else {
 			block->next = NULL;
 		}
+		blockNext->next = NULL;
+		blockNext->size = 0;
+		blockNext->prev = NULL;
+		print_heap_visualization("my_free: After combining");
 	}
 }
 
@@ -207,8 +193,8 @@ BlockMeta* _split_block(BlockMeta* block, size_t size){
 // printing stuff
 // -----------------
 
-void print_heap_visualization(){
-	printf("-----VISUALIZATION START-----\n");
+void print_heap_visualization(char* title){
+	printf("-----\"%s\" VISUALIZATION START-----\n", title);
 	printf("(metadata size is %zu)\n", META_SIZE);
 	printf("global base:\n");
 	BlockMeta* curr = globalBase;
@@ -216,9 +202,10 @@ void print_heap_visualization(){
 	while(curr->next != NULL) {
 		curr = curr->next;
 		print_block_info(curr);
+		printf("|\nv\n");
 	}
 	printf("NULL\n");	
-	printf("-----VISUALIZATION END-----\n");
+	printf("------\"%s\" VISUALIZATION END-----\n", title);
 }
 
 
@@ -226,6 +213,6 @@ void print_block_info(BlockMeta* block){
 	printf("----------\n");
 	printf("starts at %p\n", block);
 	printf("size: %zu\nprev: %p\nnext: %p\nfree: %i\n", block->size, block->prev, block->next, block->free);
-	printf("----------\n|\nv\n");
+	printf("----------\n");
 }
 
