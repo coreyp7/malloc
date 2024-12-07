@@ -39,7 +39,10 @@ void *my_malloc(size_t size){
 		BlockMeta *last = globalBase;	
 		block = _find_free_block(&last, size);
 		if(!block){
+			printf("my_malloc: No memory block can accomodate the current request for %zu bytes.\nRequesting %zu bytes in sbrk() call.", size, size);
+			print_heap_visualization("Before sbrk call");
 			block = _requestSpace(last, size);
+			print_heap_visualization("After sbrk call");
 			if(!block){
 				return NULL;
 			}
@@ -52,6 +55,7 @@ void *my_malloc(size_t size){
 				printf("my_malloc: User requested for %zu bytes, the block is currently %zu bytes.Splitting block (BlockMeta at %p) since its really big.\n", size, block->size, block);
 				print_heap_visualization("Before mem block split");	
 				BlockMeta* newBlock = _split_block(block, size);
+				print_heap_visualization("After mem block split");	
 			} 
 
 			block->free = 0;
@@ -200,11 +204,16 @@ BlockMeta* _split_block(BlockMeta* block, size_t size){
 // -----------------
 
 void print_heap_visualization(char* title){
+	if(globalBase == NULL){
+		return;
+	}
+
 	printf("-----\"%s\" VISUALIZATION START-----\n", title);
 	printf("(metadata size is %zu)\n", META_SIZE);
 	printf("global base:\n");
 	BlockMeta* curr = globalBase;
 	print_block_info(curr);
+	printf("|\nv\n");
 	while(curr->next != NULL) {
 		curr = curr->next;
 		print_block_info(curr);

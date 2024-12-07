@@ -7,30 +7,24 @@ void test_splitBigBlock();
 void test_combineBlocks();
 
 
-// Test case:
-/*
+/**
+If you run these after each other, they'll share the
+same pool system, so it won't behave exactly as you'd
+expect when writing the test.
 
-Called when there's no blocks big enough to accomodate the call
-(that is, no free blocks big enough).
-
-
-1. There's literally none available that accomodate, but they're all free.
-
-2. There's a block that *could* work, but it is not free right now.
-
-In both of these cases, ask the OS for more memory please.
-
+Run one at a time, but running back to back may allow
+you to find situations you wouldn't otherwise.
 */
-
 int main(){
 	printf("main starting\n");
-	//test_nothingBigEnough();
+	test_nothingBigEnough();
 	//test_noFreeBlocksThatAreBigEnough();
 	//test_splitBigBlock();
-	test_combineBlocks();
+	//test_combineBlocks();
 	printf("main ending\n");
 }
 
+// this ones good
 void test_combineBlocks(){
 	printf("TEST START:%s\n", __func__);
 	int* int1 = my_malloc(sizeof(int)); 
@@ -50,19 +44,27 @@ void test_combineBlocks(){
 	my_free(int5);
 }
 
+// this ones good
 void test_splitBigBlock(){
 	printf("TEST START:%s\n", __func__);
-	int* arr = (int *)my_malloc(50 * sizeof(int));
-	for(int i=0; i<50; i++){
+	int* arr = (int *)my_malloc(150 * sizeof(int));
+	for(int i=0; i<150; i++){
 		arr[i] = i * 5;
 	}
 	my_free(arr);
 	
 	// Now there's a really big block,
 	// it should be split up and given away.
+	// All three of these will split up that big one.
 	int* split = my_malloc(sizeof(int));
-	my_free(split);
+	int* split2 = my_malloc(sizeof(int));
+	int* split3 = my_malloc(sizeof(int));
+	int* splitArr = my_malloc(15 * sizeof(int));
 	printf("TEST END:%s\n", __func__);
+	my_free(split);
+	my_free(split2);
+	my_free(split3);
+	my_free(splitArr);
 }
 
 void test_nothingBigEnough(){
@@ -94,6 +96,3 @@ void test_noFreeBlocksThatAreBigEnough(){
 
 	printf("TEST END:%s\n", __func__);
 }
-
-
-
