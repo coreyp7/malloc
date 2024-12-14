@@ -39,7 +39,7 @@ void *my_malloc(size_t size){
 		BlockMeta *last = globalBase;	
 		block = _find_free_block(&last, size);
 		if(!block){
-			printf("my_malloc: No memory block can accomodate the current request for %zu bytes.\nRequesting %zu bytes in sbrk() call.", size, size);
+			printf("my_malloc: No memory block can accomodate the current request for %zu bytes.\nRequesting %zu bytes in sbrk() call.\n", size, size);
 			print_heap_visualization("Before sbrk call");
 			block = _requestSpace(last, size);
 			print_heap_visualization("After sbrk call");
@@ -77,9 +77,7 @@ void my_free(void* ptr){
 	block->free = 1;
 	print_block_info(block);
  	
-	
-	// Combine nearby blocks if possible.
-	//TODO: MOVE into functions
+	// Combine neighboring blocks if they're free.
 	if(block->prev && block->prev->free){
 		printf("my_free: Prev is free: combine block %p with block %p\n", block, block->prev);
 		print_heap_visualization("my_free: Before combining");
@@ -101,14 +99,11 @@ void my_free(void* ptr){
 		block = blockPrev;
 	}
 
-	// Look at next and combine.
 	if(block->next && block->next->free){
 		printf("my_free: Next is free: combine block %p with block %p\n", block, block->next);
 		print_heap_visualization("my_free: Before combining");
 		block->size += META_SIZE + block->next->size;
 
-		// OK now it is, just test it first, 
-		// so leaving comment here for prosperity.
 		BlockMeta* blockNext = block->next;
 		if(block->next->next){
 			block->next = block->next->next;
@@ -203,6 +198,7 @@ BlockMeta* _split_block(BlockMeta* block, size_t size){
 // printing stuff
 // -----------------
 
+// 'Title' of the visualization so its a little easier to find in output.
 void print_heap_visualization(char* title){
 	if(globalBase == NULL){
 		return;

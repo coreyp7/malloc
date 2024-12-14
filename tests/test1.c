@@ -35,7 +35,7 @@ void test_combineBlocks(){
 	my_free(int2);
 	my_free(int4);
 	// this free will trigger next & prev
-	printf("HERE! this should be triggering next & prev\n");
+	printf("%s: HERE! this should be triggering next & prev\n", __func__);
 	my_free(int3);
 	
 	
@@ -95,4 +95,20 @@ void test_noFreeBlocksThatAreBigEnough(){
 	my_free(exampleint);
 
 	printf("TEST END:%s\n", __func__);
+}
+
+void test_oneByteMinimumForMemBlock(){
+	printf("TEST START:%s\n", __func__);
+	/**
+		So, create a block where it cannot be split 
+		because there'd be 0 bytes in the next block.	
+	*/
+}
+
+void test_markingHeap(){
+	/*
+	Test to ensure that the 'marking' phase for the heap
+	is correctly behaving. Just getting this to work rn.
+	*/
+
 }
