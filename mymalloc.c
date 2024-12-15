@@ -11,6 +11,7 @@ struct BlockMeta {
 	struct BlockMeta *prev;
 	int free; // is this block free or taken already?
 	int magic; // 'For debugging only'
+	int marked;
 };
 typedef struct BlockMeta BlockMeta;
 #define META_SIZE sizeof(BlockMeta)
@@ -21,9 +22,11 @@ void print_heap_visualization(char* title);
 void *my_malloc(size_t size);
 void my_free(void* ptr);
 BlockMeta* _split_block(BlockMeta* block, size_t size);
+BlockMeta* _findBlockMeta(void* ptr, BlockMeta* blockMetaPtrIsIn);
 void print_block_info(BlockMeta* block);
 
 void *globalBase = NULL; // the head of our linked list
+void *heapEnd = NULL;
 
 void *my_malloc(size_t size){
 	BlockMeta *block;
@@ -117,7 +120,44 @@ void my_free(void* ptr){
 	}
 }
 
+// Collect our garbage
+void gc(){
+	// Mark memory blocks which have references to them
+	// in other memory blocks in the heap.
+	BlockMeta* block = globalBase;
+	
+	// TODO: this will be changed later but makes it easy rn
+	while(block != NULL){
+		block->marked = 0;
+		block = block->next;
+	}
 
+	block = globalBase;
+	
+	// this shouldn't be able to be called if globalBase is null	
+	while(block != NULL){
+		printf("while(block != NULL)\n");
+		// Want beginning & end of memblock.
+		// Then case pointers until we get valid shit.
+		//void* blockStart = block + META_SIZE;
+		void* blockStart = block + 1;
+		void* blockEnd = blockStart + block->size;
+		printf("blockStart: %p, blockEnd: %p\n", blockStart, blockEnd);
+
+		// Traverse through memory in this mem block.
+		void* p = blockStart;
+		while(p < blockEnd){
+			BlockMeta* referencedBlock = _findBlockMeta(p, block);
+			if(referencedBlock){
+				referencedBlock->marked = 1;
+			}
+			p = (char*)p + 1;
+		}
+		block = block->next;
+	}
+	
+	print_heap_visualization("post gc() visual");
+}
 
 /////////////////////////////////////////////
 // Helper functions  			   //
@@ -155,6 +195,8 @@ BlockMeta *_requestSpace(BlockMeta* last, size_t size){
 	block->next = NULL;
 	block->free = 0;
 	block->magic = 0x12345678; // idk wtf this is about yet
+
+	heapEnd = block + META_SIZE + block->size;	
 	return block;	
 }
 
@@ -194,6 +236,33 @@ BlockMeta* _split_block(BlockMeta* block, size_t size){
 
 }
 
+// Returns BlockMeta for provided ptr.
+// Returns NULL if it doesn't exist (not start of a memory block).
+// block param should be ignored when found, as its the memblock
+// that we're looking for 
+
+// Find memblock that ptr could be pointing at.
+BlockMeta* _findBlockMeta(void* ptr, BlockMeta* blockMetaPtrIsIn){
+	BlockMeta* block = globalBase;
+	do {
+		if(block == blockMetaPtrIsIn){
+			printf("Ignoring %p\n", blockMetaPtrIsIn);
+		} else if(block+1 == ptr){
+			// This is the memory address being referenced.
+			printf("_findBlockMeta SUCCESS: %p == %p\n", block+1, ptr);
+			return block;
+		} else {
+			printf("%p != %p\n", block+1, ptr);
+		}
+
+		block = block->next;
+	}
+	while(block != NULL);
+	
+	return NULL;
+
+}
+
 // -----------------
 // printing stuff
 // -----------------
@@ -224,6 +293,7 @@ void print_block_info(BlockMeta* block){
 	printf("----------\n");
 	printf("starts at %p\n", block);
 	printf("size: %zu\nprev: %p\nnext: %p\nfree: %i\n", block->size, block->prev, block->next, block->free);
+	printf("marked: %i\n", block->marked);
 	printf("----------\n");
 }
 

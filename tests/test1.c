@@ -5,6 +5,7 @@ void test_nothingBigEnough();
 void test_noFreeBlocksThatAreBigEnough();
 void test_splitBigBlock();
 void test_combineBlocks();
+void test_markingHeap();
 
 
 /**
@@ -17,10 +18,11 @@ you to find situations you wouldn't otherwise.
 */
 int main(){
 	printf("main starting\n");
-	test_nothingBigEnough();
+	//test_nothingBigEnough();
 	//test_noFreeBlocksThatAreBigEnough();
 	//test_splitBigBlock();
 	//test_combineBlocks();
+	test_markingHeap();
 	printf("main ending\n");
 }
 
@@ -110,5 +112,21 @@ void test_markingHeap(){
 	Test to ensure that the 'marking' phase for the heap
 	is correctly behaving. Just getting this to work rn.
 	*/
+	int* pInt = my_malloc(sizeof(int));
+
+	printf("cowabunga 1\n");
+	// This struct has a reference to the pInt, so it should
+	// mark the pInt BlockMeta.
+	struct testStruct {
+		int* ptrTest;	
+	};
+	typedef struct testStruct TestStruct;
+	printf("cowabunga 2\n");
+	
+	TestStruct* funny = my_malloc(sizeof(TestStruct));
+	funny->ptrTest = pInt;
+	printf("cowabunga 3\n");
+	
+	gc();
 
 }
